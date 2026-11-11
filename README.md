@@ -87,7 +87,7 @@ SELECT * FROM monthly_summary;
 
 Docs are generated with `dbt docs generate` and published to GitHub Pages:
 
-**→ [lukebarousse.github.io/dbt_Analytics_Engineering_Course/project1/](https://lukebarousse.github.io/dbt_Analytics_Engineering_Course/project1/)**
+**→ [AhmedSalem.github.io/dbt_Analytics_Engineering/project1/](https://ahmedehabyoussef9-tech.github.io/dbt-duckdb-pipeline/)**
 
 The site shows:
 
