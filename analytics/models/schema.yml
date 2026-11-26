@@ -31,7 +31,7 @@ models:
     description: Monthly posting counts by role.
     config:
       persist_docs:
-        relation: strue
+        relation: true
         columns: true
     columns:
       - name: month
