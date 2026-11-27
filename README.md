@@ -4,9 +4,9 @@
 
 ![dbt pipeline diagram](img/dbt_pipeline.png)
 
-A public dbt + DuckDB pipeline over ~692k real job postings, rebuilt and republished automatically on every push
+A public dbt + DuckDB pipeline over ~692k real job postings and their ~3.3M skill tags, rebuilt and republished automatically on every push
 
-- Models the raw postings into tested, documented insight marts
+- Models the raw postings and skills into tested, documented insight marts
 - Publishes the docs site and the finished warehouse, open to anyone with no credentials
 - Runs itself on GitHub Actions: every push and every Monday
 
@@ -14,8 +14,8 @@ Everything is free and local-friendly: DuckDB as the warehouse, GitHub Actions a
 
 | What I Built | How I Implemented | Where to Look |
 | --- | --- | --- |
-| **dbt pipeline** | sources → cleaned model → insight marts | [`analytics/models/`](analytics/models/) |
-| **Data tests** | `unique` / `not_null` on the `monthly_summary` grain, `not_null` on `job_title` | [`schema.yml`](analytics/models/schema.yml) |
+| **dbt pipeline** | sources → cleaned models → 4 insight marts | [`analytics/models/`](analytics/models/) |
+| **Data tests** | 7 tests: `unique` / `not_null` on the grain of `monthly_summary`, `top_locations` and `top_skills`, plus `not_null` on `job_title` | [`schema.yml`](analytics/models/schema.yml) |
 | **Hosted dbt docs** | lineage, descriptions, column tests | [Live docs site](https://ahmedehabyoussef9-tech.github.io/dbt-duckdb-pipeline/) |
 | **Public CI** | build + test + publish on every push | [Actions workflow](https://github.com/ahmedehabyoussef9-tech/dbt-duckdb-pipeline/actions/workflows/dbt_build.yml) |
 | **Environments** | local `dev` vs CI `prod` targets | [`ci/profiles.yml`](ci/profiles.yml) |
@@ -33,13 +33,28 @@ And the dbt features doing the work:
 
 | dbt Feature | How I Used It |
 | --- | --- |
-| Declared sources (no hardcoded paths in SQL) | [`sources.yml`](analytics/models/sources.yml) + `source('raw', 'job_postings')` |
+| Declared sources (no hardcoded paths in SQL) | [`sources.yml`](analytics/models/sources.yml) + `source('raw', 'job_postings')` and `source('raw', 'job_skills')` |
 | Model dependencies | `ref()` everywhere downstream; dbt resolves order and parallelism |
 | Materializations | project default `table`; staging override to `view` |
-| Data tests | `unique` / `not_null` on the `monthly_summary` grain, `not_null` on `job_title` in [`schema.yml`](analytics/models/schema.yml) |
+| Data tests | `unique` / `not_null` on mart grains (`monthly_summary`, `top_locations`, `top_skills`) and `not_null` on `job_title` in [`schema.yml`](analytics/models/schema.yml) |
 | Environments | local `dev` vs CI `prod` targets ([`ci/profiles.yml`](ci/profiles.yml)) |
 
 `dbt build` compiles SQL, materializes models, and fails the run if any test fails — same command locally and in CI.
+
+---
+
+## 📊 What the marts answer
+
+| Mart | Question it answers |
+| --- | --- |
+| `jobs_per_month` | How many postings are there per role each month? |
+| `monthly_summary` | What is the monthly total, remote count and remote share? |
+| `top_locations` | Which 10 locations have the most postings? |
+| `top_skills` | Which 20 skills appear in the most postings? |
+
+`top_skills` is the mart I added beyond the course build. It joins the skills file to the cleaned postings and counts **distinct** `job_id`s, because the same posting is scraped more than once (~692k rows, ~491k unique postings). Counting rows instead would inflate every skill.
+
+Example result: SQL and Python each appear in more than half of the distinct postings (55.0% and 54.8%), followed by AWS (28.4%) and Azure (27.4%).
 
 ---
 
@@ -78,6 +93,7 @@ SHOW TABLES;
 
 SELECT * FROM top_locations;
 SELECT * FROM monthly_summary;
+SELECT * FROM top_skills;
 ```
 
 > The database is rebuilt automatically by GitHub Actions and republished to this release URL, so the data you query is always the latest successful build.

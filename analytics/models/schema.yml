@@ -50,6 +50,9 @@ models:
     columns:
       - name: job_location
         description: Posting location; the grain.
+        data_tests:
+          - unique
+          - not_null
       - name: postings
         description: Postings counted for the location.
 
@@ -73,3 +76,28 @@ models:
         description: Share of the month's postings flagged remote, percent.
       - name: non_remote_postings
         description: Number of postings not flagged as remote that month, calculated by subtracting remote postings from total postings.
+  
+  - name: job_skills
+    description: Skill keywords per posting; one row per job_id and skill.
+    columns:
+      - name: job_id
+        description: The scraper's posting id; joins to job_postings.
+      - name: skill_keyword
+        description: Skill named in the posting (lowercase, e.g. sql, python).
+
+  - name: top_skills
+    description: Top 20 skills by number of distinct postings that mention them.
+    config:
+      persist_docs:
+        relation: true
+        columns: true
+    columns:
+      - name: skill
+        description: Skill keyword; the grain.
+        data_tests:
+          - unique
+          - not_null
+      - name: postings
+        description: Distinct postings that mention the skill.
+      - name: pct_of_postings
+        description: Share of all distinct postings that mention the skill, percent.

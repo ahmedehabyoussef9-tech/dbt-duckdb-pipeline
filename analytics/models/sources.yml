@@ -5,3 +5,7 @@ sources:
         description: One row per job-posting scrape, raw from the pipeline.
         config:
            external_location: '../data/raw/raw_job_postings_*.parquet'
+      - name: job_skills
+        description: One row per skill found in a posting (job_id + skill_keyword).
+        config:
+          external_location: '../data/raw/raw_job_skills.parquet'
